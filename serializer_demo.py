@@ -18,12 +18,18 @@ class SongSerializer:
 # creator component
 # returns functions doesn't call them, no parenthesis just function name
 def _get_serializer(format):
-    if format == 'JSON':
-        return _serialize_to_json  # return function
-    elif format == 'XML':
-        return _serialize_to_xml
-    else:
+    format_to_func = {'JSON': _serialize_to_json, 'XML': _serialize_to_xml}
+    try:
+        return format_to_func[format]
+    except KeyError:
         raise ValueError(format)
+
+    # if format == 'JSON':
+    #     return _serialize_to_json  # return function
+    # elif format == 'XML':
+    #     return _serialize_to_xml
+    # else:
+    #     raise ValueError(format)
 
 # concrete implementations of the product
 def _serialize_to_json(song):
@@ -41,3 +47,16 @@ def _serialize_to_xml(song):
     artist = et.SubElement(song_element, 'artist')
     artist.text = song.artist
     return et.tostring(song_element, encoding='unicode')
+
+
+if __name__ == '__main__':
+    song = Song('123', 'Imagine', 'John Lennon')
+    serializer = SongSerializer()
+
+    try:
+        print(serializer.serialize(song, 'JSON'))
+        print(serializer.serialize(song, 'XML'))
+        print(serializer.serialize(song, 'YAML'))
+    except ValueError as e:
+        print(f"Unrecognized format: {e}")
+
