@@ -35,26 +35,30 @@ class XmlSerializer:
 
 #
 class ObjectSerializer:
-    def serialize(self, serializable, format):
-        serializer = factory.get_serializer(format)  # retrieve the serializer from the object factory
+    def serialize(self, serializable, output_format):
+        serializer = factory.get_serializer(output_format)  # retrieve the serializer from the object factory
         serializable.serialize(serializer)  #
         return serializer.to_str()
 
 
+# the object factory
 class SerializerFactory:
-    format_to_class = {'JSON': JsonSerializer, 'XML': XmlSerializer}
+    def __init__(self):
+        self._creators = {}
 
+    # creator is class name
+    def register_format(self, output_format, creator):
+        self._creators[output_format] = creator # store class name
+
+    # return a serializer object based on format
     def get_serializer(self, output_format):
-        try:
-            return self.format_to_class[output_format]()  # make instance of class
-        except KeyError:
-            raise ValueError(output_format)
-        # if format == 'JSON':
-        #     return JsonSerializer()
-        # elif format == 'XML':
-        #     return XmlSerializer()
-        # else:
-        #     raise ValueError(format)
+        creator = self._creators.get(output_format)
+        if not creator:
 
+            raise ValueError(output_format)
+        return creator()
 
 factory = SerializerFactory()
+factory.register_format('JSON', JsonSerializer)
+factory.register_format('XML', XmlSerializer)
+factory.register_format('YAML', XmlSerializer)
